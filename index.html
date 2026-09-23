@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>Anime Contribution Graph · Live Demo</title>
+<style>
+:root{
+  --bg:#fffaf8;--bg2:#f8f5f3;--panel:rgba(255,255,255,.86);--panel-solid:#fff;
+  --text:#17213e;--muted:#788197;--line:#e8e7eb;--pink:#ef5a8b;--pink2:#ff8cab;
+  --green0:#edf7ed;--green1:#ccebc9;--green2:#99d98c;--green3:#55b65a;--green4:#238636;
+  --shadow:0 18px 55px rgba(46,39,46,.10);--radius:22px;
+}
+[data-theme="dark"]{
+  --bg:#111319;--bg2:#171a21;--panel:rgba(28,31,39,.86);--panel-solid:#1b1f27;
+  --text:#f5f6fb;--muted:#9ca5b8;--line:#2c313b;--shadow:0 18px 55px rgba(0,0,0,.34);
+  --green0:#1f2c24;--green1:#274f31;--green2:#35773f;--green3:#419a4b;--green4:#55c65e;
+}
+*{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:
+radial-gradient(circle at 12% -10%,rgba(255,176,197,.24),transparent 29%),
+radial-gradient(circle at 88% 10%,rgba(255,210,220,.24),transparent 24%),
+linear-gradient(180deg,var(--bg),var(--bg2));color:var(--text);
+font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI","PingFang SC",sans-serif;transition:.25s}
+button,select{font:inherit;color:inherit}.shell{width:min(1460px,calc(100% - 28px));margin:auto;padding-bottom:32px}
+nav{height:74px;display:flex;align-items:center;justify-content:space-between;gap:20px;position:sticky;top:0;z-index:50;backdrop-filter:blur(22px);background:color-mix(in srgb,var(--bg) 80%,transparent);border-bottom:1px solid color-mix(in srgb,var(--line) 85%,transparent)}
+.brand{display:flex;gap:11px;align-items:center}.brand-mark{width:36px;height:36px;border-radius:13px;background:linear-gradient(135deg,#ffcad8,#f05a8b);display:grid;place-items:center;box-shadow:0 8px 24px rgba(239,90,139,.18);font-size:18px}.brand strong{display:block;font-size:18px}.brand span{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.navlinks{display:flex;align-items:center;gap:7px}.navlinks a,.iconbtn,.pillbtn{border:0;text-decoration:none;background:transparent;padding:10px 12px;border-radius:12px;color:var(--muted);font-weight:700;cursor:pointer}.navlinks a.active{color:var(--text);background:color-mix(in srgb,var(--panel-solid) 75%,transparent)}.pillbtn.primary{background:linear-gradient(135deg,var(--pink),var(--pink2));color:#fff;padding:11px 16px;box-shadow:0 8px 22px rgba(239,90,139,.22)}
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:24px;align-items:center;padding:48px 28px 28px;min-height:350px}.eyebrow{font-size:13px;color:var(--pink);font-weight:800;letter-spacing:.05em;margin-bottom:10px}.hero h1{font-size:clamp(38px,5vw,72px);line-height:.98;margin:0 0 16px;letter-spacing:-.045em}.hero h1 span{color:var(--pink)}.hero p{font-size:17px;line-height:1.65;color:var(--muted);max-width:720px;margin:0}.badges{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}.badge{padding:9px 13px;border:1px solid var(--line);background:color-mix(in srgb,var(--panel-solid) 83%,transparent);border-radius:999px;font-size:12px;font-weight:800;box-shadow:0 6px 18px rgba(36,38,48,.05)}
+.hero-art{min-height:300px;position:relative;display:grid;place-items:center;overflow:hidden}.hero-art img{width:min(360px,88%);aspect-ratio:1;object-fit:cover;border-radius:46px;box-shadow:0 28px 70px rgba(80,51,61,.22);transform:rotate(2deg)}.hero-art:before,.hero-art:after{content:"";position:absolute;border-radius:50%;filter:blur(2px)}.hero-art:before{width:320px;height:320px;background:rgba(255,163,190,.20)}.hero-art:after{width:180px;height:180px;background:rgba(255,232,236,.75);right:8%;top:8%;z-index:-1}.scribble{position:absolute;font-family:"Comic Sans MS",cursive;color:#d9839c;font-size:16px;transform:rotate(-7deg);right:2%;bottom:8%;line-height:1.5;text-align:center}
+.section{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);backdrop-filter:blur(18px);margin:14px 0;overflow:hidden}.section-head{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:14px}.section-head h2{font-size:18px;margin:0}.section-head p{font-size:12px;color:var(--muted);margin:3px 0 0}.head-left{display:flex;align-items:center;gap:10px}.head-icon{width:36px;height:36px;border-radius:12px;background:color-mix(in srgb,var(--pink) 12%,transparent);color:var(--pink);display:grid;place-items:center;font-weight:900}.demo-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(390px,.6fr);min-height:520px}.graph-side{padding:20px;border-right:1px solid var(--line)}.graph-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.graph-toolbar strong{font-size:14px}.yearsel{border:1px solid var(--line);background:var(--panel-solid);border-radius:11px;padding:8px 11px}.langsel{border:1px solid var(--line);background:var(--panel-solid);border-radius:11px;padding:9px 10px;font-weight:750;cursor:pointer;max-width:126px}.graph-wrap{position:relative;padding:25px 6px 44px 43px;overflow:hidden}.months{display:grid;grid-template-columns:repeat(12,1fr);gap:2px;color:var(--muted);font-size:10px;margin-bottom:7px}.weekdays{position:absolute;left:0;top:52px;display:grid;grid-template-rows:repeat(7,16px);gap:4px;color:var(--muted);font-size:10px}.heatmap{position:relative;display:grid;grid-template-columns:repeat(53,1fr);grid-template-rows:repeat(7,16px);grid-auto-flow:column;gap:4px;min-width:740px}.cell{height:16px;border-radius:4px;background:var(--green0);transition:transform .16s,filter .16s,background .25s}.cell:hover{transform:scale(1.22);filter:brightness(.96);z-index:5}.lv1{background:var(--green1)}.lv2{background:var(--green2)}.lv3{background:var(--green3)}.lv4{background:var(--green4)}.ecg-svg{position:absolute;left:43px;top:52px;width:calc(100% - 49px);height:calc(7 * 16px + 6 * 4px);pointer-events:none;overflow:visible;--ecg-len:1000}.ecg-path,.ecg-glow{fill:none;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}.ecg-path{stroke:#f16f9d;stroke-width:3.4;opacity:.96}.ecg-glow{stroke:#ffc2d4;stroke-width:10;opacity:.20;filter:blur(.55px)}.ecg-path.playing{stroke-dasharray:var(--ecg-len);stroke-dashoffset:var(--ecg-len);animation:drawEcg 2.6s linear forwards}.ecg-glow.playing{stroke-dasharray:var(--ecg-len);stroke-dashoffset:var(--ecg-len);animation:drawEcg 2.6s linear forwards}@keyframes drawEcg{from{stroke-dashoffset:var(--ecg-len)}to{stroke-dashoffset:0}}
+.legend{display:flex;gap:7px;align-items:center;font-size:11px;color:var(--muted);margin:10px 0 0 43px}.legend i{width:14px;height:14px;border-radius:4px;display:inline-block}.graph-caption{display:flex;justify-content:space-between;align-items:center;margin:18px 0 0 43px;font-size:12px;color:var(--muted)}.startbtn{border:1px solid var(--line);background:var(--panel-solid);padding:9px 12px;border-radius:11px;font-weight:800;cursor:pointer}.startbtn:hover{transform:translateY(-1px)}
+.character-side{padding:18px;display:flex;flex-direction:column;gap:12px}.mode-tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mode-tab{border:1px solid var(--line);background:var(--panel-solid);padding:7px;border-radius:15px;display:flex;align-items:center;gap:8px;cursor:pointer;text-align:left}.mode-tab.active{border-color:color-mix(in srgb,var(--pink) 75%,var(--line));box-shadow:0 0 0 3px color-mix(in srgb,var(--pink) 12%,transparent)}.mode-tab img{width:54px;height:54px;border-radius:11px;object-fit:cover}.mode-tab span{font-size:12px;font-weight:900}.portrait-card{position:relative;display:grid;grid-template-columns:180px 1fr;gap:14px;align-items:center}.portrait{width:180px;aspect-ratio:1;object-fit:cover;border-radius:24px;border:1px solid var(--line);box-shadow:0 15px 30px rgba(74,46,57,.12)}.state-badge{position:absolute;left:10px;top:10px;background:rgba(255,255,255,.92);color:#d94178;padding:7px 10px;border-radius:999px;font-size:10px;font-weight:1000;box-shadow:0 5px 15px rgba(40,35,42,.1)}[data-theme="dark"] .state-badge{background:rgba(26,28,34,.92)}.quote{font-size:14px;line-height:1.55;font-weight:760;background:color-mix(in srgb,var(--pink) 9%,var(--panel-solid));padding:14px;border-radius:16px}.affection{margin-top:3px}.affection-top{display:flex;justify-content:space-between;font-size:12px;font-weight:900;margin-bottom:7px}.bar{height:10px;border-radius:999px;background:color-mix(in srgb,var(--pink) 14%,var(--line));overflow:hidden}.bar>i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#f6a1b9,var(--pink));border-radius:inherit;transition:width .35s}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{border:1px solid var(--line);background:var(--panel-solid);border-radius:14px;padding:11px}.stat span{display:block;color:var(--muted);font-size:10px;margin-bottom:5px}.stat strong{font-size:18px}.stat em{font-style:normal;color:#2da44e;font-size:11px;font-weight:900}
+.bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.mini{padding:18px}.mini-title{display:flex;gap:10px;align-items:center;margin-bottom:13px}.mini-title h3{margin:0;font-size:15px}.mini-title span{font-size:11px;color:var(--muted)}.normal-preview{display:grid;grid-template-columns:1fr 84px 190px;gap:12px;align-items:center}.miniheat{display:grid;grid-template-columns:repeat(26,1fr);grid-template-rows:repeat(5,9px);grid-auto-flow:column;gap:3px}.miniheat i{border-radius:2px;background:var(--green0)}.mini-avatar{width:84px;height:84px;border-radius:18px;object-fit:cover;border:1px solid var(--line)}.mini-quote{background:color-mix(in srgb,var(--pink) 6%,var(--panel-solid));border-radius:15px;padding:14px;font-size:12px;line-height:1.5}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.step{border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--panel-solid)}.step b{display:block;font-size:12px;margin:7px 0}.step p{margin:0;color:var(--muted);font-size:10px;line-height:1.45}.step-no{width:26px;height:26px;border-radius:9px;background:color-mix(in srgb,var(--pink) 12%,transparent);color:var(--pink);display:grid;place-items:center;font-weight:1000}
+.readme{padding:18px}.readme-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}.readme-top h3{margin:0;font-size:15px}.codebox{display:flex;gap:10px;align-items:center;background:color-mix(in srgb,var(--text) 4%,var(--panel-solid));border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;overflow:auto}.codebox code{white-space:nowrap;flex:1}.copy{border:1px solid var(--line);background:var(--panel-solid);border-radius:10px;padding:8px 10px;font-weight:800;cursor:pointer}.footer{display:flex;justify-content:space-between;align-items:center;padding:18px 6px;color:var(--muted);font-size:11px}.footer strong{color:var(--text)}
+.tooltip{position:fixed;pointer-events:none;padding:7px 9px;border-radius:9px;background:#151923;color:#fff;font-size:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;transform:translate(-50%,-120%);transition:opacity .08s;z-index:100}.tooltip.show{opacity:1}
+@media(max-width:1050px){.hero{grid-template-columns:1fr}.hero-art{display:none}.demo-grid{grid-template-columns:1fr}.graph-side{border-right:0;border-bottom:1px solid var(--line)}.bottom-grid{grid-template-columns:1fr}.navlinks a{display:none}}@media(max-width:720px){.shell{width:min(100% - 16px,1460px)}nav{height:64px}.brand span{display:none}.pillbtn.primary{display:none}.hero{padding:32px 8px 20px}.hero h1{font-size:44px}.section{border-radius:18px}.demo-grid{display:block}.graph-side{padding:12px}.graph-wrap{overflow-x:auto}.character-side{padding:12px}.portrait-card{grid-template-columns:116px 1fr}.portrait{width:116px;border-radius:18px}.stats{grid-template-columns:1fr}.normal-preview{grid-template-columns:1fr 72px}.mini-quote{grid-column:1/-1}.steps{grid-template-columns:1fr}.footer{flex-direction:column;gap:8px}.mode-tab img{width:42px;height:42px}.mode-tab span{font-size:11px}}
+</style>
+</head>
+<body>
+<div class="shell">
+<nav>
+  <div class="brand"><div class="brand-mark">♡</div><div><strong>Anime Contribution Graph</strong><span id="brandSub">Live web demo · OC Edition</span></div></div>
+  <div class="navlinks"><a class="active" id="navHome" href="#home">Home</a><a id="navDemo" href="#demo">Demo</a><a id="navHow" href="#how">How it works</a><select class="langsel" id="langSelect" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="ja">日本語</option></select><button class="iconbtn" id="themeBtn" title="Theme">◐</button><a class="pillbtn primary" id="useTemplate" href="#readme">Use Template →</a></div>
+</nav>
+<section class="hero" id="home">
+  <div>
+    <div class="eyebrow">OPEN SOURCE · SVG · GITHUB ACTIONS</div>
+    <h1>Anime <span>Contribution</span> Graph</h1>
+    <p id="heroDesc">Turn your GitHub contributions into an animated anime profile card with a heatmap, OC states, affection dialogue, and automatic deployment.</p>
+    <div class="badges"><span class="badge">◈ Open Source</span><span class="badge">⌁ Animated SVG</span><span class="badge">⚙ Daily Actions</span><span class="badge">♡ OC States</span></div>
+  </div>
+  <div class="hero-art"><img src="assets/character_overdrive.png" alt="OC Overdrive"><div class="scribble" id="scribble">Small commits<br>make a brighter tomorrow ♡</div></div>
+</section>
+
+<section class="section" id="demo">
+  <div class="section-head"><div class="head-left"><div class="head-icon">▥</div><div><h2 id="liveTitle">Live Demo</h2><p id="liveDesc">The year is grouped into 3 long heartbeat segments: Jan–Apr, May–Aug, and Sep–Dec. Each peak is driven by the contribution volume in that 4-month period.</p></div></div><select class="yearsel" id="yearSelect"><option>2026</option><option>2025</option><option>2024</option></select></div>
+  <div class="demo-grid">
+    <div class="graph-side">
+      <div class="graph-toolbar"><strong id="graphTitle">Contributions in the last year</strong><button class="startbtn" id="playBtn">Replay drawing</button></div>
+      <div class="graph-wrap" id="graphWrap">
+        <div class="months" id="months"><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span></div>
+        <div class="weekdays" id="weekdays"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+        <div class="heatmap" id="heatmap"></div>
+        <svg class="ecg-svg" id="ecgSvg" viewBox="0 0 742 136" preserveAspectRatio="none" aria-hidden="true"><path class="ecg-glow" id="ecgGlow"></path><path class="ecg-path" id="ecgPath"></path></svg>
+        <div class="legend"><span id="lessLabel">Less</span><i style="background:var(--green0)"></i><i style="background:var(--green1)"></i><i style="background:var(--green2)"></i><i style="background:var(--green3)"></i><i style="background:var(--green4)"></i><span id="moreLabel">More</span></div>
+        <div class="graph-caption"><span id="graphCaption">♡ 4 months = 1 long heartbeat · 3 beats per year</span><span id="hoverHint">Hover a cell for details</span></div>
+      </div>
+    </div>
+    <aside class="character-side">
+      <div class="mode-tabs"><button class="mode-tab" data-mode="normal"><img src="assets/character_normal.png" alt="Normal"><span id="normalTab">Normal</span></button><button class="mode-tab active" data-mode="overdrive"><img src="assets/character_overdrive.png" alt="Overdrive"><span id="overdriveTab">Overdrive</span></button></div>
+      <div class="portrait-card"><img class="portrait" id="portrait" src="assets/character_overdrive.png" alt="OC state"><span class="state-badge" id="stateBadge">⚡ OVERDRIVE</span><div><div class="quote" id="quote">“Today’s coding energy is maxed out!”</div><div class="affection"><div class="affection-top"><span id="affectionLabel">♡ Affection</span><span id="affText">100%</span></div><div class="bar"><i id="affBar"></i></div></div></div></div>
+      <div class="stats"><div class="stat"><span id="todayLabel">Today</span><strong id="todayStat">12</strong> <em>↑ 3</em></div><div class="stat"><span id="streakLabel">Streak</span><strong>28</strong> <small id="daysLabel">days</small></div><div class="stat"><span id="totalLabel">Total Contributions</span><strong>1,248</strong></div></div>
+    </aside>
+  </div>
+</section>
+
+<div class="bottom-grid">
+  <section class="section mini"><div class="mini-title"><div class="head-icon">☘</div><div><h3 id="normalTitle">Normal Mode</h3><span id="normalSub">A calm everyday state for steady progress.</span></div></div><div class="normal-preview"><div class="miniheat" id="miniheat"></div><img class="mini-avatar" src="assets/character_normal.png" alt="Normal OC"><div class="mini-quote" id="normalQuote">“Steady progress today as well.”</div></div></section>
+  <section class="section mini" id="how"><div class="mini-title"><div class="head-icon">⚙</div><div><h3 id="howTitle">How It Works</h3><span id="howSub">The real project follows these three steps.</span></div></div><div class="steps"><div class="step"><div class="step-no">1</div><b id="step1Title">Read contributions</b><p id="step1Text">Read annual contribution data through the GitHub API.</p></div><div class="step"><div class="step-no">2</div><b id="step2Title">Generate anime SVG</b><p id="step2Text">Render the heatmap, OC state, dialogue, and heartbeat into SVG.</p></div><div class="step"><div class="step-no">3</div><b id="step3Title">Deploy to Pages</b><p id="step3Text">GitHub Actions publishes the output branch for README embedding.</p></div></div></section>
+</div>
+
+<section class="section readme" id="readme"><div class="readme-top"><div><h3 id="readmeTitle">Add to Your README</h3><p id="readmeSub" style="margin:4px 0 0;color:var(--muted);font-size:11px">Once the SVG is generated, your README only needs one line.</p></div><button class="copy" id="copyBtn">Copy</button></div><div class="codebox"><code id="codeText">![Anime Contribution Graph](https://YOURNAME.github.io/Anime-Contribution-Graph/anime-contribution.svg)</code></div></section>
+<footer class="footer"><div><strong>Anime Contribution Graph</strong> · OC Edition</div><div id="footerText">Customize your profile · Share your coding story ♡</div></footer>
+</div>
+<div class="tooltip" id="tooltip"></div>
+<script>
+const heatmap=document.getElementById('heatmap'), miniheat=document.getElementById('miniheat'), tooltip=document.getElementById('tooltip');
+const ecgPath=document.getElementById('ecgPath'), ecgGlow=document.getElementById('ecgGlow'), ecgSvg=document.getElementById('ecgSvg');
+let seed=2026, mode='overdrive', weeklyTotals=[], lastToday=12, lastTotal=1248;
+let currentLang='en';
+const I18N={
+  en:{
+    brandSub:'Live web demo · OC Edition',navHome:'Home',navDemo:'Demo',navHow:'How it works',useTemplate:'Use Template →',
+    heroDesc:'Turn your GitHub contributions into an animated anime profile card with a heatmap, OC states, affection dialogue, and automatic deployment.',
+    scribble:'Small commits\nmake a brighter tomorrow ♡',liveTitle:'Live Demo',
+    liveDesc:'The year is grouped into 3 long heartbeat segments: Jan–Apr, May–Aug, and Sep–Dec. Each peak is driven by the contribution volume in that 4-month period.',
+    graphTitle:'Contributions in the last year',replay:'Replay drawing',less:'Less',more:'More',graphCaption:'♡ 4 months = 1 long heartbeat · 3 beats per year',hover:'Hover a cell for details',
+    normal:'Normal',overdrive:'Overdrive',affection:'♡ Affection',today:'Today',streak:'Streak',days:'days',total:'Total Contributions',
+    normalTitle:'Normal Mode',normalSub:'A calm everyday state for steady progress.',normalQuote:'“Steady progress today as well.”',
+    howTitle:'How It Works',howSub:'The real project follows these three steps.',step1Title:'Read contributions',step1Text:'Read annual contribution data through the GitHub API.',step2Title:'Generate anime SVG',step2Text:'Render the heatmap, OC state, dialogue, and heartbeat into SVG.',step3Title:'Deploy to Pages',step3Text:'GitHub Actions publishes the output branch for README embedding.',
+    readmeTitle:'Add to Your README',readmeSub:'Once the SVG is generated, your README only needs one line.',copy:'Copy',copied:'Copied!',footer:'Customize your profile · Share your coding story ♡',
+    normalState:'NORMAL',overdriveState:'⚡ OVERDRIVE',normalStateQuote:'“Steady progress today as well.”',overdriveStateQuote:'“Today’s coding energy is maxed out!”',yearTotal:n=>`${n.toLocaleString('en-US')} contributions this year`,cell:(d,n)=>`${d} · ${n} contribution${n===1?'':'s'}`,
+    months:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],weekdays:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],locale:'en-CA'
+  },
+  'zh-CN':{
+    brandSub:'网页演示 · OC 版本',navHome:'首页',navDemo:'演示',navHow:'工作原理',useTemplate:'使用模板 →',
+    heroDesc:'把 GitHub 贡献变成一张会动的二次元个人主页卡片：贡献热力图、OC 状态、好感度台词与自动部署都在其中。',
+    scribble:'小小的提交\n也会让明天更亮 ♡',liveTitle:'实时演示',liveDesc:'全年只保留 3 段长心电波：1–4 月、5–8 月、9–12 月；每段高度由对应 4 个月的贡献量决定。',
+    graphTitle:'过去一年的贡献',replay:'重新绘制',less:'少',more:'多',graphCaption:'♡ 4 个月 = 1 次长心跳 · 全年 3 次',hover:'悬停格子查看详情',
+    normal:'普通',overdrive:'爆肝',affection:'♡ 好感度',today:'今天',streak:'连续',days:'天',total:'总贡献',normalTitle:'普通模式',normalSub:'适合日常的安静状态，稳稳推进。',normalQuote:'“今天也稳稳推进了一点。”',
+    howTitle:'工作原理',howSub:'正式项目就是这三步。',step1Title:'读取贡献',step1Text:'通过 GitHub API 读取年度贡献数据。',step2Title:'生成二次元 SVG',step2Text:'把贡献格、OC 状态、台词与心电图渲染成 SVG。',step3Title:'部署到 Pages',step3Text:'GitHub Actions 自动发布 output 分支，README 直接引用。',
+    readmeTitle:'添加到 README',readmeSub:'SVG 生成后，你的 README 只需要这一行。',copy:'复制',copied:'已复制！',footer:'自定义你的主页 · 分享你的 coding story ♡',
+    normalState:'普通',overdriveState:'⚡ 爆肝模式',normalStateQuote:'“今天也稳稳推进了一点。”',overdriveStateQuote:'“今天的 coding energy 拉满啦！”',yearTotal:n=>`今年共 ${n.toLocaleString('zh-CN')} 次贡献`,cell:(d,n)=>`${d} · ${n} 次贡献`,
+    months:['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],weekdays:['周一','周二','周三','周四','周五','周六','周日'],locale:'zh-CN'
+  },
+  ja:{
+    brandSub:'ライブWebデモ · OC Edition',navHome:'ホーム',navDemo:'デモ',navHow:'仕組み',useTemplate:'テンプレートを使う →',
+    heroDesc:'GitHub のコントリビューションを、ヒートマップ・OC 状態・好感度セリフ・自動デプロイ付きのアニメ風プロフィールカードに変換します。',
+    scribble:'小さなコミットが\n明日をもっと明るくする ♡',liveTitle:'ライブデモ',liveDesc:'1年を3つの長い心拍にまとめます：1–4月、5–8月、9–12月。各ピークの高さは、その4か月間の貢献量で決まります。',
+    graphTitle:'過去1年間のコントリビューション',replay:'もう一度描く',less:'少',more:'多',graphCaption:'♡ 4か月 = 1つの長い心拍 · 1年で3拍',hover:'セルにカーソルを合わせて詳細を見る',
+    normal:'通常',overdrive:'オーバードライブ',affection:'♡ 好感度',today:'今日',streak:'連続',days:'日',total:'総コントリビューション',normalTitle:'通常モード',normalSub:'日常向けの落ち着いた状態。少しずつ前へ。',normalQuote:'「今日も少しずつ進めたね。」',
+    howTitle:'仕組み',howSub:'実際のプロジェクトはこの3ステップです。',step1Title:'貢献データを読む',step1Text:'GitHub API から年間の貢献データを取得します。',step2Title:'アニメSVGを生成',step2Text:'ヒートマップ、OC状態、セリフ、心拍線を SVG に描画します。',step3Title:'Pagesへデプロイ',step3Text:'GitHub Actions が output ブランチへ公開し、README から直接参照できます。',
+    readmeTitle:'README に追加',readmeSub:'SVG が生成されたら、README にはこの1行だけでOKです。',copy:'コピー',copied:'コピーしました！',footer:'プロフィールを自分らしく · コーディングの物語を共有しよう ♡',
+    normalState:'通常',overdriveState:'⚡ オーバードライブ',normalStateQuote:'「今日も少しずつ進めたね。」',overdriveStateQuote:'「今日のコーディングエネルギー、MAXだよ！」',yearTotal:n=>`今年のコントリビューション ${n.toLocaleString('ja-JP')} 件`,cell:(d,n)=>`${d} · ${n} 件のコントリビューション`,
+    months:['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],weekdays:['月','火','水','木','金','土','日'],locale:'ja-JP'
+  }
+};
+function tr(){return I18N[currentLang]||I18N.en}
+function setText(id,value){const el=document.getElementById(id); if(el) el.textContent=value}
+function applyLang(lang,{rebuild=true}={}){
+  currentLang=I18N[lang]?lang:'en'; document.documentElement.lang=currentLang; document.getElementById('langSelect').value=currentLang;
+  const t=tr();
+  ['brandSub','navHome','navDemo','navHow','useTemplate','heroDesc','liveTitle','liveDesc','graphTitle','normalTitle','normalSub','howTitle','howSub','step1Title','step1Text','step2Title','step2Text','step3Title','step3Text','readmeTitle','readmeSub'].forEach(k=>setText(k,t[k]));
+  setText('playBtn',t.replay); setText('lessLabel',t.less); setText('moreLabel',t.more); setText('graphCaption',t.graphCaption); setText('hoverHint',t.hover);
+  setText('normalTab',t.normal); setText('overdriveTab',t.overdrive); setText('affectionLabel',t.affection); setText('todayLabel',t.today); setText('streakLabel',t.streak); setText('daysLabel',t.days); setText('totalLabel',t.total);
+  setText('normalQuote',t.normalQuote); setText('copyBtn',t.copy); setText('footerText',t.footer);
+  document.getElementById('scribble').innerHTML=t.scribble.replace(/\n/g,'<br>');
+  [...document.getElementById('months').children].forEach((el,i)=>el.textContent=t.months[i]);
+  [...document.getElementById('weekdays').children].forEach((el,i)=>el.textContent=t.weekdays[i]);
+  localStorage.setItem('acg-lang',currentLang);
+  if(rebuild) buildHeatmap(document.getElementById('yearSelect').value); else setMode(mode);
+}
+
+function rnd(){ seed=(seed*1664525+1013904223)%4294967296; return seed/4294967296; }
+function level(v){return v===0?0:v<3?1:v<6?2:v<9?3:4}
+function renderCell(cell, raw, date){
+  const lv=level(raw);
+  cell.className='cell '+(lv?'lv'+lv:'');
+  const t=tr(); const dateText=date.toLocaleDateString(t.locale,{month:'short',day:'numeric'}); cell.dataset.tip=t.cell(dateText,raw);
+}
+function buildHeatmap(year){
+  seed=Number(year)*7919+33; heatmap.innerHTML=''; weeklyTotals=[]; let total=0; const base=new Date(Number(year),0,1); let lastRaw=0;
+  for(let c=0;c<53;c++){
+    let weekSum=0;
+    for(let r=0;r<7;r++){
+      const trend=c/52;
+      const wave=(Math.sin(c*.47+r*.9)+1)/2;
+      const season=(Math.sin(c*.18-1.2)+1)/2;
+      let raw=Math.max(0,Math.round((rnd()*.40+trend*.45+wave*.18+season*.12-.23)*13));
+      if(rnd()<.17 && raw<6) raw=0;
+      weekSum += raw; total += raw; lastRaw = raw;
+      const cell=document.createElement('i');
+      const d=new Date(base); d.setDate(d.getDate()+c*7+r);
+      renderCell(cell, raw, d);
+      cell.addEventListener('mousemove',e=>{tooltip.textContent=cell.dataset.tip;tooltip.style.left=e.clientX+'px';tooltip.style.top=e.clientY+'px';tooltip.classList.add('show')});
+      cell.addEventListener('mouseleave',()=>tooltip.classList.remove('show'));
+      heatmap.appendChild(cell);
+    }
+    weeklyTotals.push(weekSum);
+  }
+  lastToday=lastRaw; lastTotal=total;
+  document.getElementById('todayStat').textContent=lastToday;
+  document.querySelector('.stats .stat:last-child strong').textContent=lastTotal.toLocaleString('en-US');
+  document.getElementById('hoverHint').textContent=tr().yearTotal(lastTotal);
+  makePath(weeklyTotals);
+  autoState();
+}
+function buildMini(){seed=4131;miniheat.innerHTML='';for(let i=0;i<130;i++){const v=level(Math.floor(rnd()*11));const e=document.createElement('i');if(v)e.style.background=`var(--green${v})`;miniheat.appendChild(e)}}
+function pointsToPath(points){return points.map((p,i)=>`${i?'L':'M'} ${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ')}
+let replayTimer=null;
+const DRAW_MS=2600, REDRAW_DELAY_MS=3000;
+function makePath(values){
+  const w=742, h=136, base=h/2;
+  // 53 weeks -> 3 four-month groups: Jan-Apr / May-Aug / Sep-Dec.
+  const ranges=[[0,18],[18,36],[36,53]];
+  const grouped=ranges.map(([a,b])=>values.slice(a,b).reduce((s,v)=>s+v,0));
+  const max=Math.max(...grouped,1);
+  const segW=w/3;
+  const pts=[[0,base]];
+
+  grouped.forEach((sum,idx)=>{
+    const x=idx*segW;
+    const n=sum/max;
+    // Higher 4-month contribution => taller heartbeat peak.
+    const amp=25+n*35;
+    const dip=9+n*17;
+    const p=segW;
+    // One long heartbeat per 4-month segment, deliberately stretched.
+    const shape=[
+      [0.00,0], [0.16,0],
+      [0.24,-3-n*3], [0.29,0],
+      [0.39,0], [0.46,5+n*4],
+      [0.52,-amp], [0.58,dip],
+      [0.65,-amp*.24], [0.72,0],
+      [0.84,0], [1.00,0]
+    ];
+    shape.forEach(([t,dy],j)=>{
+      const px=Math.min(w,x+t*p), py=base+dy;
+      if(idx>0 && j===0) return;
+      pts.push([px,py]);
+    });
+  });
+
+  const d=pointsToPath(pts);
+  ecgPath.setAttribute('d',d); ecgGlow.setAttribute('d',d);
+  const len=Math.ceil(ecgPath.getTotalLength());
+  ecgSvg.style.setProperty('--ecg-len', String(len));
+  replay();
+}
+function replay(){
+  if(replayTimer) clearTimeout(replayTimer);
+  [ecgPath,ecgGlow].forEach(el=>{
+    el.classList.remove('playing');
+    el.style.animation='none';
+    void el.getBBox();
+    el.style.animation='';
+  });
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    ecgPath.classList.add('playing');
+    ecgGlow.classList.add('playing');
+  }));
+  // Finish drawing, stay visible ~3 seconds, then redraw from the far left.
+  replayTimer=setTimeout(replay,DRAW_MS+REDRAW_DELAY_MS);
+}
+const states={normal:{img:'assets/character_normal.png',aff:76},overdrive:{img:'assets/character_overdrive.png',aff:100}};
+function setMode(next){
+  mode=next; const s=states[next];
+  document.getElementById('portrait').src=s.img;
+  const t=tr(); document.getElementById('stateBadge').textContent=next==='normal'?t.normalState:t.overdriveState;
+  document.getElementById('quote').textContent=next==='normal'?t.normalStateQuote:t.overdriveStateQuote;
+  document.getElementById('affText').textContent=s.aff+'%';
+  document.getElementById('affBar').style.width=s.aff+'%';
+  document.querySelectorAll('.mode-tab').forEach(b=>b.classList.toggle('active',b.dataset.mode===next));
+}
+function autoState(){
+  const max=Math.max(...weeklyTotals,1);
+  const recent=weeklyTotals.slice(-4).reduce((a,b)=>a+b,0)/4;
+  const hot=recent>max*.56 || lastToday>=9;
+  const next=hot?'overdrive':'normal';
+  setMode(next);
+}
+document.querySelectorAll('.mode-tab').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
+document.getElementById('playBtn').onclick=replay;
+document.getElementById('yearSelect').onchange=e=>buildHeatmap(e.target.value);
+document.getElementById('themeBtn').onclick=()=>{const root=document.documentElement;root.dataset.theme=root.dataset.theme==='dark'?'light':'dark'};
+document.getElementById('langSelect').onchange=e=>applyLang(e.target.value);
+document.getElementById('copyBtn').onclick=async()=>{const t=document.getElementById('codeText').textContent;try{await navigator.clipboard.writeText(t)}catch{}const b=document.getElementById('copyBtn');b.textContent=tr().copied;setTimeout(()=>b.textContent=tr().copy,1200)};
+buildMini();
+const savedLang=localStorage.getItem('acg-lang');
+applyLang(savedLang&&I18N[savedLang]?savedLang:'en');
+</script>
+</body>
+</html>
