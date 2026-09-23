@@ -58,3 +58,41 @@ Offline smoke test:
 ```bash
 python generate_anime.py --user YOUR_NAME --demo --output demo.svg
 ```
+
+
+## OC states
+
+The card now has four live activity states:
+
+- `IDLE` — very quiet recent activity
+- `FOCUS` — light, steady progress
+- `HAPPY` — active coding day
+- `OVERDRIVE` — high recent contribution volume
+
+The normal portrait is used for IDLE/FOCUS, while the energetic portrait is used for HAPPY/OVERDRIVE. The heartbeat accent color changes with the state.
+
+Dialogue is selected from a per-state pool and rotates on hourly Action refreshes.
+
+If your current streak is at least 2 days, the card also shows a `COMBO × N` badge.
+
+## Light / dark profile embedding
+
+The Action generates:
+
+- `anime-contribution.svg` — automatic theme
+- `anime-contribution-light.svg` — forced light
+- `anime-contribution-dark.svg` — forced dark
+- `anime-contribution-zh.svg`
+- `anime-contribution-ja.svg`
+
+Recommended profile README:
+
+```html
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/YOUR_NAME/Anime-Contribution-Graph/output/anime-contribution-dark.svg" />
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/YOUR_NAME/Anime-Contribution-Graph/output/anime-contribution-light.svg" />
+    <img width="100%" alt="Anime Contribution Graph" src="https://raw.githubusercontent.com/YOUR_NAME/Anime-Contribution-Graph/output/anime-contribution.svg" />
+  </picture>
+</p>
+```
