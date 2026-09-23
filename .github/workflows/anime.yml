@@ -36,7 +36,7 @@ jobs:
 
       - name: Generate animated SVGs from live contribution data
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.PROFILE_TOKEN || github.token }}
         run: |
           python generate_anime.py --user "${{ github.repository_owner }}" --lang en --output dist/anime-contribution.svg
           python generate_anime.py --user "${{ github.repository_owner }}" --lang zh --output dist/anime-contribution-zh.svg
