@@ -26,7 +26,7 @@ For this repository owner:
 
 `.github/workflows/anime.yml` regenerates the SVG from GitHub's GraphQL contribution calendar:
 
-- every 3 hours;
+- every hour;
 - whenever the generator, workflow, or character assets change;
 - whenever you press **Run workflow** manually.
 
