@@ -245,14 +245,38 @@ def heartbeat_path(weekly_totals, x0, y0, width, height):
     return d, groups
 
 
+def wrap_quote(text: str, lang: str, max_chars: int = 30) -> list[str]:
+    """Wrap short dialogue into at most two SVG text lines."""
+    if lang in ("zh", "ja"):
+        if len(text) <= max_chars:
+            return [text]
+        return [text[:max_chars], text[max_chars:max_chars * 2]]
+
+    words = text.split()
+    lines: list[str] = []
+    current = ""
+    for word in words:
+        candidate = (current + " " + word).strip()
+        if current and len(candidate) > max_chars:
+            lines.append(current)
+            current = word
+        else:
+            current = candidate
+    if current:
+        lines.append(current)
+    if len(lines) <= 2:
+        return lines
+    return [lines[0], " ".join(lines[1:])]
+
+
 def render(user: str, weeks, lang: str, normal_uri: str, overdrive_uri: str) -> str:
     t = LANG[lang]
     days, total, today, last7, streak, mode, affection = stats(weeks)
     weekly_totals = [sum(int(d["contributionCount"]) for d in w.get("contributionDays", [])) for w in weeks]
 
-    W, H = 1120, 360
+    W, H = 1120, 480
     gx, gy = 38, 94
-    cell, gap = 10, 3
+    cell, gap = 12, 6
     pitch = cell + gap
     gw = len(weeks) * pitch - gap
     gh = 7 * pitch - gap
@@ -261,6 +285,11 @@ def render(user: str, weeks, lang: str, normal_uri: str, overdrive_uri: str) -> 
     portrait_uri = overdrive_uri if mode == "overdrive" else normal_uri
     status = t["overdrive"] if mode == "overdrive" else t["normal"]
     quote = t["overdrive_quote"] if mode == "overdrive" else t["normal_quote"]
+    quote_lines = wrap_quote(quote, lang, 30)
+    quote_tspans = "".join(
+        f'<tspan x="230" y="{300 + i * 19}">“{esc(line)}{("”" if i == len(quote_lines) - 1 else "")}</tspan>'
+        for i, line in enumerate(quote_lines)
+    )
 
     cells = []
     for c, week in enumerate(weeks):
@@ -286,7 +315,7 @@ def render(user: str, weeks, lang: str, normal_uri: str, overdrive_uri: str) -> 
     generated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     group_text = " / ".join(str(v) for v in groups)
 
-    return f'''<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1120 360" role="img" aria-labelledby="title desc">
+    return f'''<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 {W} {H}" role="img" aria-labelledby="title desc">
 <title id="title">{esc(t['title'])} — {esc(user)}</title>
 <desc id="desc">Animated GitHub contribution graph with three contribution-driven heartbeat segments.</desc>
 <style>
@@ -322,10 +351,10 @@ def render(user: str, weeks, lang: str, normal_uri: str, overdrive_uri: str) -> 
   }}
   @media (prefers-reduced-motion) {{ .heart,.heart-glow,.pulse {{ animation:none !important; stroke-dashoffset:0 !important; opacity:1 !important; }} }}
 </style>
-<rect class="bg" x="1" y="1" width="1118" height="358" rx="24"/>
+<rect class="bg" x="1" y="1" width="{W-2}" height="{H-2}" rx="24"/>
 <text class="text title" x="38" y="42">{esc(t['title'])}</text>
 <text class="muted sub" x="38" y="62">@{esc(user)} · {esc(t['subtitle'])}</text>
-<text class="muted small" x="720" y="40" text-anchor="end">{esc(t['group'])}</text>
+<text class="muted small" x="{W-38}" y="40" text-anchor="end">{esc(t['group'])}</text>
 
 {''.join(labels)}
 {''.join(cells)}
@@ -337,27 +366,28 @@ def render(user: str, weeks, lang: str, normal_uri: str, overdrive_uri: str) -> 
 <text class="muted small" x="{legend_x + 132}" y="{legend_y}">{esc(t['more'])}</text>
 <text class="muted small" x="38" y="{legend_y}">3 heartbeat volumes: {group_text}</text>
 
-<rect class="panel" x="748" y="24" width="346" height="312" rx="22"/>
-<defs><clipPath id="portraitClip"><rect x="770" y="48" width="136" height="136" rx="24"/></clipPath></defs>
-<image href="{portrait_uri}" x="770" y="48" width="136" height="136" preserveAspectRatio="xMidYMid slice" clip-path="url(#portraitClip)"/>
-<rect x="779" y="57" width="{100 if mode=='normal' else 126}" height="24" rx="12" fill="{'#e8f3ec' if mode=='normal' else '#ffe0ea'}" opacity=".95"/>
-<text x="790" y="73" font-size="10" font-weight="800" fill="{'#27864b' if mode=='normal' else '#d93e76'}" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">{'● ' if mode=='normal' else '⚡ '}{esc(status)}</text>
+<rect class="panel" x="38" y="246" width="1044" height="204" rx="22"/>
 
-<text class="text quote" x="928" y="65">“{esc(quote)}”</text>
-<text class="muted small" x="928" y="95">{esc(t['affection'])}</text>
-<text class="text label" x="1068" y="95" text-anchor="end">{affection}%</text>
-<rect x="928" y="106" width="140" height="8" rx="4" fill="#f2d9e2"/>
-<rect class="pulse" x="928" y="106" width="{1.4*affection:.1f}" height="8" rx="4" fill="#ef6f9e"/>
+<defs><clipPath id="portraitClip"><rect x="60" y="268" width="146" height="146" rx="24"/></clipPath></defs>
+<image href="{portrait_uri}" x="60" y="268" width="146" height="146" preserveAspectRatio="xMidYMid slice" clip-path="url(#portraitClip)"/>
+<rect x="70" y="280" width="{100 if mode=='normal' else 126}" height="24" rx="12" fill="{'#e8f3ec' if mode=='normal' else '#ffe0ea'}" opacity=".95"/>
+<text x="82" y="296" font-size="10" font-weight="800" fill="{'#27864b' if mode=='normal' else '#d93e76'}" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">{'● ' if mode=='normal' else '⚡ '}{esc(status)}</text>
 
-<rect class="bg" x="770" y="205" width="96" height="78" rx="15"/>
-<rect class="bg" x="878" y="205" width="96" height="78" rx="15"/>
-<rect class="bg" x="986" y="205" width="86" height="78" rx="15"/>
-<text class="muted small" x="784" y="226">{esc(t['today'])}</text><text class="text value" x="784" y="254">{today}</text>
-<text class="muted small" x="892" y="226">{esc(t['streak'])}</text><text class="text value" x="892" y="254">{streak}</text><text class="muted small" x="930" y="254">{esc(t['days'])}</text>
-<text class="muted small" x="1000" y="226">{esc(t['total'])}</text><text class="text value" x="1000" y="254">{total:,}</text>
+<text class="text quote">{quote_tspans}</text>
+<text class="muted small" x="230" y="354">{esc(t['affection'])}</text>
+<text class="text label" x="420" y="354" text-anchor="end">{affection}%</text>
+<rect x="230" y="366" width="190" height="8" rx="4" fill="#f2d9e2"/>
+<rect class="pulse" x="230" y="366" width="{1.9*affection:.1f}" height="8" rx="4" fill="#ef6f9e"/>
 
-<text class="muted small" x="770" y="309">{esc(t['updated'])}: {generated}</text>
-<text class="muted small" x="1072" y="309" text-anchor="end">♡ Anime Contribution Graph</text>
+<rect class="bg" x="670" y="278" width="118" height="92" rx="15"/>
+<rect class="bg" x="802" y="278" width="118" height="92" rx="15"/>
+<rect class="bg" x="934" y="278" width="118" height="92" rx="15"/>
+<text class="muted small" x="686" y="302">{esc(t['today'])}</text><text class="text value" x="686" y="337">{today}</text>
+<text class="muted small" x="818" y="302">{esc(t['streak'])}</text><text class="text value" x="818" y="337">{streak}</text><text class="muted small" x="858" y="337">{esc(t['days'])}</text>
+<text class="muted small" x="950" y="302">{esc(t['total'])}</text><text class="text value" x="950" y="337">{total:,}</text>
+
+<text class="muted small" x="60" y="430">{esc(t['updated'])}: {generated}</text>
+<text class="muted small" x="1060" y="430" text-anchor="end">♡ Anime Contribution Graph</text>
 </svg>'''
 
 
