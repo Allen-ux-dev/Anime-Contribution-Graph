@@ -38,9 +38,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.PROFILE_TOKEN || github.token }}
         run: |
-          python generate_anime.py --user "${{ github.repository_owner }}" --lang en --output dist/anime-contribution.svg
-          python generate_anime.py --user "${{ github.repository_owner }}" --lang zh --output dist/anime-contribution-zh.svg
-          python generate_anime.py --user "${{ github.repository_owner }}" --lang ja --output dist/anime-contribution-ja.svg
+          python generate_anime.py --user "${{ github.repository_owner }}" --lang en --theme auto  --output dist/anime-contribution.svg
+          python generate_anime.py --user "${{ github.repository_owner }}" --lang en --theme light --output dist/anime-contribution-light.svg
+          python generate_anime.py --user "${{ github.repository_owner }}" --lang en --theme dark  --output dist/anime-contribution-dark.svg
+          python generate_anime.py --user "${{ github.repository_owner }}" --lang zh --theme auto  --output dist/anime-contribution-zh.svg
+          python generate_anime.py --user "${{ github.repository_owner }}" --lang ja --theme auto  --output dist/anime-contribution-ja.svg
           touch dist/.nojekyll
 
       - name: Publish generated SVGs to output branch
